@@ -5,28 +5,30 @@ import (
 	"net/http"
 	"regexp"
 
+	"github.com/YaegerMoon/deepzoom/services"
 	"github.com/gin-gonic/gin"
 )
 
 type Controller struct {
-	prefix string
-	engine *gin.Engine
+	prefix   string
+	engine   *gin.Engine
+	deepzoom *services.RegionDeepZoom
 }
 
-func New(prefix string, engine *gin.Engine) *Controller {
+func New(prefix string, engine *gin.Engine, deepzoom *services.RegionDeepZoom) *Controller {
 
-	group := engine.Group(prefix)
+	c := &Controller{prefix, engine, deepzoom}
+
+	group := c.engine.Group(prefix)
 	{
-		group.GET("/:slide/dzi", getDZI)
-		group.GET("/:slide/dzi_files/:level/:colrow", getTile)
+		group.GET("/:slide/dzi", c.getDZI)
+		group.GET("/:slide/dzi_files/:level/:colrow", c.getTile)
 	}
-
-	c := &Controller{prefix, engine}
 
 	return c
 }
 
-func getDZI(c *gin.Context) {
+func (controller *Controller) getDZI(c *gin.Context) {
 
 	slide := c.Param("slide")
 	if len(slide) == 0 {
@@ -41,7 +43,7 @@ func getDZI(c *gin.Context) {
 	})
 }
 
-func getTile(c *gin.Context) {
+func (controller *Controller) getTile(c *gin.Context) {
 
 	r, _ := regexp.Compile("([0-9]+)")
 	slide := c.Param("slide")
