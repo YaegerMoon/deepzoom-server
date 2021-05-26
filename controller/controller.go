@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	"net/http"
+	"regexp"
 
 	"github.com/gin-gonic/gin"
 )
@@ -27,9 +28,11 @@ func New(prefix string, engine *gin.Engine) *Controller {
 
 func getDZI(c *gin.Context) {
 
-	slideName := c.Param("slide")
-
-	fmt.Printf("Slide Name : %s \n", slideName)
+	slide := c.Param("slide")
+	if len(slide) == 0 {
+		c.Status(http.StatusBadRequest)
+	}
+	fmt.Printf("Slide Name : %s \n", slide)
 
 	c.XML(http.StatusOK, gin.H{
 		"width":  30,
@@ -40,13 +43,14 @@ func getDZI(c *gin.Context) {
 
 func getTile(c *gin.Context) {
 
-	slideName := c.Param("slide")
+	r, _ := regexp.Compile("([0-9]+)")
+	slide := c.Param("slide")
 	level := c.Param("level")
-	colrow := c.Param("colrow")
+	colrow := r.FindAllString(c.Param("colrow"), 2)
 
-	fmt.Printf("Slide Name : %s \n", slideName)
-	fmt.Printf("Level : %s \n", level)
-	fmt.Printf("Col Row : %s \n", colrow)
+	if len(slide) == 0 || len(level) == 0 || len(colrow) != 2 {
+		c.Status(http.StatusBadRequest)
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"file": "ImageFile",
