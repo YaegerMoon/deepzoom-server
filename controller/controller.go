@@ -10,14 +10,13 @@ import (
 )
 
 type Controller struct {
-	prefix   string
-	engine   *gin.Engine
-	deepzoom *services.RegionDeepZoom
+	prefix string
+	engine *gin.Engine
 }
 
-func New(prefix string, engine *gin.Engine, deepzoom *services.RegionDeepZoom) *Controller {
+func New(prefix string, engine *gin.Engine) *Controller {
 
-	c := &Controller{prefix, engine, deepzoom}
+	c := &Controller{prefix, engine}
 
 	group := c.engine.Group(prefix)
 	{
@@ -30,11 +29,12 @@ func New(prefix string, engine *gin.Engine, deepzoom *services.RegionDeepZoom) *
 
 func (controller *Controller) getDZI(c *gin.Context) {
 
-	slide := c.Param("slide")
-	if len(slide) == 0 {
+	slidePath := c.Param("slide")
+	if len(slidePath) == 0 {
 		c.Status(http.StatusBadRequest)
 	}
-	fmt.Printf("Slide Name : %s \n", slide)
+	fmt.Printf("Slide Name : %s \n", slidePath)
+	services.New(slidePath, 64, 1, 1, "png", services.Area{0, 0, 0, 0})
 
 	c.XML(http.StatusOK, gin.H{
 		"width":  30,
@@ -46,14 +46,15 @@ func (controller *Controller) getDZI(c *gin.Context) {
 func (controller *Controller) getTile(c *gin.Context) {
 
 	r, _ := regexp.Compile("([0-9]+)")
-	slide := c.Param("slide")
+	slidePath := c.Param("slide")
 	level := c.Param("level")
 	colrow := r.FindAllString(c.Param("colrow"), 2)
 
-	if len(slide) == 0 || len(level) == 0 || len(colrow) != 2 {
+	if len(slidePath) == 0 || len(level) == 0 || len(colrow) != 2 {
 		c.Status(http.StatusBadRequest)
 	}
 
+	services.New(slidePath, 64, 1, 1, "png", services.Area{0, 0, 0, 0})
 	c.JSON(http.StatusOK, gin.H{
 		"file": "ImageFile",
 	})
