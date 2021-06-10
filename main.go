@@ -7,6 +7,9 @@ import (
 
 const API_PREFIX = "/api/v1"
 
+//SHOULD BE REMOVED ON PRODUCTION
+const JWT_KEY = "hello"
+
 func main() {
 
 	router := gin.Default()

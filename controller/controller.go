@@ -9,14 +9,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type Header struct {
+	Access string `header:"Access"`
+}
+
 type Controller struct {
 	prefix string
 	engine *gin.Engine
+	jtwkey string
 }
 
-func New(prefix string, engine *gin.Engine) *Controller {
+func New(prefix string, engine *gin.Engine, jwtkey string) *Controller {
 
-	c := &Controller{prefix, engine}
+	c := &Controller{prefix, engine, jwtkey}
 
 	group := c.engine.Group(prefix)
 	{
@@ -58,4 +63,12 @@ func (controller *Controller) getTile(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"file": "ImageFile",
 	})
+}
+
+func (Controller *Controller) healthCheck(c *gin.Context) {
+	header := Header{}
+	if err := c.ShouldBindHeader(&header); err != nil {
+		c.JSON(http.StatusUnauthorized, err)
+	}
+	c.Status(http.StatusOK)
 }
