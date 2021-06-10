@@ -22,7 +22,7 @@ type Controller struct {
 func New(prefix string, engine *gin.Engine, jwtkey string) *Controller {
 
 	c := &Controller{prefix, engine, jwtkey}
-
+	c.engine.GET("/", c.healthCheck)
 	group := c.engine.Group(prefix)
 	{
 		group.GET("/:slide/dzi", c.getDZI)
