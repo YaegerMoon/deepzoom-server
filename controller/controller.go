@@ -5,19 +5,23 @@ import (
 	"net/http"
 	"regexp"
 
-	"github.com/YaegerMoon/deepzoom/services"
 	"github.com/gin-gonic/gin"
 )
+
+type Header struct {
+	Access string `header:"Access"`
+}
 
 type Controller struct {
 	prefix string
 	engine *gin.Engine
+	jtwkey string
 }
 
-func New(prefix string, engine *gin.Engine) *Controller {
+func New(prefix string, engine *gin.Engine, jwtkey string) *Controller {
 
-	c := &Controller{prefix, engine}
-
+	c := &Controller{prefix, engine, jwtkey}
+	c.engine.GET("/", c.healthCheck)
 	group := c.engine.Group(prefix)
 	{
 		group.GET("/:slide/dzi", c.getDZI)
@@ -34,7 +38,8 @@ func (controller *Controller) getDZI(c *gin.Context) {
 		c.Status(http.StatusBadRequest)
 	}
 	fmt.Printf("Slide Name : %s \n", slidePath)
-	services.New(slidePath, 64, 1, 1, "png", services.Area{0, 0, 0, 0})
+	// area := services.Area{Top: 0, Left: 0, Right: 0, Bottom: 0}
+	// services.New(slidePath, 64, 1, 1, "png", area)
 
 	c.XML(http.StatusOK, gin.H{
 		"width":  30,
@@ -43,7 +48,7 @@ func (controller *Controller) getDZI(c *gin.Context) {
 	})
 }
 
-func (controller *Controller) getTile(c *gin.Context) {
+func (ctl *Controller) getTile(c *gin.Context) {
 
 	r, _ := regexp.Compile("([0-9]+)")
 	slidePath := c.Param("slide")
@@ -53,9 +58,23 @@ func (controller *Controller) getTile(c *gin.Context) {
 	if len(slidePath) == 0 || len(level) == 0 || len(colrow) != 2 {
 		c.Status(http.StatusBadRequest)
 	}
-
-	services.New(slidePath, 64, 1, 1, "png", services.Area{0, 0, 0, 0})
+	// area := services.Area{Top: 0, Left: 0, Right: 0, Bottom: 0}
+	// services.New(slidePath, 64, 1, 1, "png", area)
 	c.JSON(http.StatusOK, gin.H{
 		"file": "ImageFile",
 	})
+}
+
+func (ctl *Controller) healthCheck(c *gin.Context) {
+	h := Header{}
+	if err := c.ShouldBindHeader(&h); err != nil {
+		c.JSON(http.StatusUnauthorized, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"s": 4321})
+}
+
+func (ctl *Controller) Run(port string) {
+	ctl.engine.Run(port)
 }

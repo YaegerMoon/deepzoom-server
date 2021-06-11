@@ -7,9 +7,11 @@ import (
 
 const API_PREFIX = "/api/v1"
 
+//SHOULD BE REMOVED ON PRODUCTION
+const JWT_KEY = "hello"
+
 func main() {
 
-	router := gin.Default()
-	controller.New(API_PREFIX, router)
-	router.Run(":8080")
+	c := controller.New(API_PREFIX, gin.Default(), JWT_KEY)
+	c.Run(":8080")
 }
